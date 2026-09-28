@@ -14,6 +14,8 @@
 .target-marker.selected.done .aim-cross{stroke:#b0ffbd;stroke-width:3.5}
 .point-leader{stroke:#edf7e3;stroke-width:1;opacity:.7;vector-effect:non-scaling-stroke;pointer-events:none}
 .beam.done{display:none}
+.source.done{fill:#52ee91;stroke:#134c2e}
+.num.done{fill:#91ffb6;stroke:#153727}
 .header .number{white-space:nowrap}
 .header .tag{display:none}
 .progress{display:flex;align-items:center;justify-content:space-between;gap:7px;margin:14px 0 0;color:#d8ebe1;font-size:13px}
@@ -53,7 +55,7 @@ if(!storageWorks)document.getElementById('storageNote').textContent='Брауз�
 // короткие линии показывают их настоящие точки нацеливания.
 const pointBuckets=new Map();for(const a of A){const key=`${a.target_x}|${a.target_y}`;if(!pointBuckets.has(key))pointBuckets.set(key,[]);pointBuckets.get(key).push(a)}
 for(const bucket of pointBuckets.values())for(let i=0;i<bucket.length;i++){bucket[i].marker_x=bucket[i].target_x+(i-(bucket.length-1)/2)*2800;bucket[i].marker_y=bucket[i].target_y;bucket[i].sharesPoint=bucket.length>1}
-function paintAimed(a){const done=aimed.has(a.id);a.beam.classList.toggle('done',done);a.marker.classList.toggle('done',done);a.pointNumber.setAttribute('y',done?-1650:75)}
+function paintAimed(a){const done=aimed.has(a.id);a.beam.classList.toggle('done',done);a.marker.classList.toggle('done',done);a.sourceIcon.classList.toggle('done',done);a.sourceNumber.classList.toggle('done',done);a.pointNumber.setAttribute('y',done?-1650:75)}
 function setAimed(a,done){if(done)aimed.add(a.id);else aimed.delete(a.id);paintAimed(a);saveAimed();updateProgress();show(a)}
 function clearSelection(){if(active){active.beam.classList.remove('sel');active.marker.classList.remove('selected');active=null}clear(G.dims);clear(G.matches);for(const a of A)a.dot.setAttribute('class','target');info.innerHTML='<p>Выберите прожектор, луч или точку.</p>'}
 document.getElementById('resetProgress').addEventListener('click',()=>{if(!aimed.size)return;if(!window.confirm(`Сбросить отметки «Нацелен» у ${aimed.size} прожекторов? Все лучи снова появятся.`))return;aimed.clear();for(const a of A)paintAimed(a);saveAimed();updateProgress();clearSelection()});
@@ -77,7 +79,7 @@ function show(a){if(active){active.beam.classList.remove('sel');active.marker.cl
  if(matchMedia('(max-width:700px)').matches)document.getElementById('panel').scrollTop=0;
 }
 for(const a of A){const beam=el('g',{class:'beam'},G.beams);line(a.source_x,a.source_y,a.target_x,a.target_y,'beam-line',beam);line(a.source_x,a.source_y,a.target_x,a.target_y,'beam-hit',beam);beam.addEventListener('click',()=>show(a));a.beam=beam;
- circ(a.source_x,a.source_y,450,'source',G.sources);const sh=circ(a.source_x,a.source_y,1800,'source-hit',G.sources);sh.addEventListener('click',()=>show(a));
+ a.sourceIcon=circ(a.source_x,a.source_y,450,'source',G.sources);const sh=circ(a.source_x,a.source_y,1800,'source-hit',G.sources);sh.addEventListener('click',()=>show(a));
  if(a.sharesPoint)line(a.target_x,a.target_y,a.marker_x,a.marker_y,'point-leader',G.targets);
  const marker=el('g',{class:'target-marker',transform:`translate(${a.marker_x},${a.marker_y})`},G.targets);a.marker=marker;
  a.dot=circ(0,0,1050,'target',marker);
@@ -85,8 +87,8 @@ for(const a of A){const beam=el('g',{class:'beam'},G.beams);line(a.source_x,a.so
  const textGroup=el('g',{transform:'scale(1,-1)'},marker);
  a.pointNumber=el('text',{x:0,y:75,class:'target-number'},textGroup);a.pointNumber.textContent=a.id;
  const th=circ(0,0,a.sharesPoint?1300:2100,'target-hit',marker);th.addEventListener('click',()=>show(a));
+ const group=el('g',{transform:`translate(${a.source_x},${a.source_y}) scale(1,-1)`},G.labels);const tx=el('text',{x:a.source_x<0?-1350:1350,y:500,class:'num','text-anchor':a.source_x<0?'end':'start'},group);tx.textContent=a.id;a.sourceNumber=tx;
  paintAimed(a);
- const group=el('g',{transform:`translate(${a.source_x},${a.source_y}) scale(1,-1)`},G.labels);const tx=el('text',{x:a.source_x<0?-1350:1350,y:500,class:'num','text-anchor':a.source_x<0?'end':'start'},group);tx.textContent=a.id;
 }
 updateProgress();
 // Zoom around the viewport center; pointer drag and two-finger pinch work offline.
